@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Heart Attack Prediction</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f4f9ff;
+            color: #333;
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #d62828;
+        }
+
+        .header-image {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .header-image img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 4px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        .submit-btn {
+            margin-top: 20px;
+            background-color: #d62828;
+            color: white;
+            border: none;
+            cursor: pointer;
+            padding: 10px 16px;
+            border-radius: 6px;
+        }
+
+        .result {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #007f5f;
+            font-weight: bold;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            animation: slideDown 0.3s ease-out;
+            position: relative;
+        }
+
+        .modal-header {
+            padding: 25px 30px 20px;
+            text-align: center;
+            border-radius: 15px 15px 0 0;
+        }
+
+        .modal-header.safe {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            color: #155724;
+        }
+
+        .modal-header.risk {
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            color: #721c24;
+        }
+
+        .modal-header.mixed {
+            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+            color: #856404;
+        }
+
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            color: #999;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.8);
+            transition: all 0.3s ease;
+        }
+
+        .close:hover {
+            color: #333;
+            background: rgba(255,255,255,1);
+            transform: scale(1.1);
+        }
+
+        .modal-icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+
+        .modal-title {
+            font-size: 28px;
+            margin-bottom: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .modal-body {
+            padding: 20px 30px 30px;
+            text-align: center;
+        }
+
+        .modal-message {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .model-results {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .model-badge {
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: bold;
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+        }
+
+        .model-badge.safe {
+            background: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+
+        .model-badge.risk {
+            background: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+
+        .disclaimer {
+            font-size: 12px;
+            color: #666;
+            font-style: italic;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+            margin-top: 15px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .guide {
+            margin-top: 30px;
+            font-size: 14px;
+            background-color: #e9f5ff;
+            padding: 15px;
+            border-left: 5px solid #2196F3;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+ 
+    <h1>Prediksi Risiko Serangan Jantung</h1>
+    
+    <div class="header-image">
+        <img src="{{ url_for('static', filename='images.png') }}" alt="Heart Attack Prediction Illustration">
+    </div>
+    
+    <form action="/predict" method="post">
+        <label>Usia (Age)</label>
+        <input type="number" name="Age" required>
+
+        <label>Jenis Kelamin (Sex)</label>
+        <select name="Sex" required>
+            <option value="M">Laki-laki</option>
+            <option value="F">Perempuan</option>
+        </select>
+
+        <label>Jenis Nyeri Dada (ChestPainType)</label>
+        <select name="ChestPainType" required>
+            <option value="ATA">ATA</option>
+            <option value="NAP">NAP</option>
+            <option value="TA">TA</option>
+            <option value="ASY">Asymptomatic</option>
+        </select>
+
+        <label>Tekanan Darah (RestingBP)</label>
+        <input type="number" name="RestingBP" required>
+
+        <label>Kolesterol (Cholesterol)</label>
+        <input type="number" name="Cholesterol" required>
+
+        <label>Gula Darah Puasa >120 mg/dl? (FastingBS)</label>
+        <select name="FastingBS" required>
+            <option value="0">Tidak</option>
+            <option value="1">Ya</option>
+        </select>
+
+        <label>EKG Istirahat (RestingECG)</label>
+        <select name="RestingECG" required>
+            <option value="Normal">Normal</option>
+            <option value="ST">ST</option>
+            <option value="LVH">LVH</option>
+        </select>
+
+        <label>Denyut Jantung Maks (MaxHR)</label>
+        <input type="number" name="MaxHR" required>
+
+        <label>Angina karena Olahraga? (ExerciseAngina)</label>
+        <select name="ExerciseAngina" required>
+            <option value="N">Tidak</option>
+            <option value="Y">Ya</option>
+        </select>
+
+        <label>Oldpeak</label>
+        <input type="number" name="Oldpeak" step="0.1" required>
+
+        <label>Kemiringan ST (ST_Slope)</label>
+        <select name="ST_Slope" required>
+            <option value="Up">Up</option>
+            <option value="Flat">Flat</option>
+            <option value="Down">Down</option>
+        </select>
+
+        <button type="submit" class="submit-btn">Prediksi</button>
+    </form>
+
+    <!-- Modal untuk hasil prediksi -->
+    {% if knn_result or gnb_result %}
+    {% set both_safe = (knn_result == "Tidak Berisiko" and gnb_result == "Tidak Berisiko") %}
+    {% set both_risk = (knn_result == "Berisiko" and gnb_result == "Berisiko") %}
+    {% set mixed = not both_safe and not both_risk %}
+    
+    <div id="resultModal" class="modal" style="display: block;">
+        <div class="modal-content">
+            <div class="modal-header {% if both_safe %}safe{% elif both_risk %}risk{% else %}mixed{% endif %}">
+                <span class="close" onclick="closeModal()">&times;</span>
+                
+                {% if both_safe %}
+                    <div class="modal-icon">✅</div>
+                    <div class="modal-title">Hasil Baik</div>
+                {% elif both_risk %}
+                    <div class="modal-icon">⚠️</div>
+                    <div class="modal-title">Perlu Perhatian</div>
+                {% else %}
+                    <div class="modal-icon">🔍</div>
+                    <div class="modal-title">Hasil Beragam</div>
+                {% endif %}
+            </div>
+            
+            <div class="modal-body">
+                <div class="modal-message">
+                    {% if both_safe %}
+                        Kedua model AI menunjukkan Anda <strong>TIDAK BERISIKO</strong> mengalami serangan jantung berdasarkan data yang dimasukkan. Namun tetap jaga pola hidup sehat!
+                    {% elif both_risk %}
+                        Kedua model AI menunjukkan Anda <strong>BERISIKO</strong> mengalami serangan jantung. Sangat disarankan untuk segera berkonsultasi dengan dokter!
+                    {% else %}
+                        Model AI memberikan hasil yang berbeda. Disarankan untuk melakukan pemeriksaan lebih lanjut dengan tenaga medis profesional.
+                    {% endif %}
+                </div>
+                
+                <div class="model-results">
+                    <div class="model-badge {% if knn_result == 'Tidak Berisiko' %}safe{% else %}risk{% endif %}">
+                        <strong>KNN Model</strong><br>{{ knn_result }}
+                    </div>
+                    <div class="model-badge {% if gnb_result == 'Tidak Berisiko' %}safe{% else %}risk{% endif %}">
+                        <strong>Naive Bayes</strong><br>{{ gnb_result }}
+                    </div>
+                </div>
+                
+                <div class="disclaimer">
+                    <strong>Disclaimer:</strong> Hasil ini hanya prediksi berdasarkan model AI dan bukan pengganti diagnosis medis profesional. Selalu konsultasikan dengan dokter untuk pemeriksaan kesehatan yang akurat.
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <script>
+        function closeModal() {
+            document.getElementById('resultModal').style.display = 'none';
+        }
+
+        // Tutup modal jika mengklik di luar modal
+        window.onclick = function(event) {
+            var modal = document.getElementById('resultModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+
+        // Tutup modal dengan tombol ESC
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
+
+    <div class="guide">
+        <strong>Petunjuk Pengisian:</strong><br><br>
+        <ul>
+            <li><strong>Age:</strong> Usia pasien dalam tahun (misal: 45)</li>
+            <li><strong>Sex:</strong> Jenis kelamin pasien (M = laki-laki, F = perempuan)</li>
+            <li><strong>ChestPainType:</strong> Jenis nyeri dada (ATA, NAP, TA, ASY)</li>
+            <li><strong>RestingBP:</strong> Tekanan darah saat istirahat (contoh: 120)</li>
+            <li><strong>Cholesterol:</strong> Kadar kolesterol serum (contoh: 200)</li>
+            <li><strong>FastingBS:</strong> 1 jika kadar gula darah puasa >120 mg/dl, 0 jika tidak</li>
+            <li><strong>RestingECG:</strong> Hasil EKG istirahat (Normal, ST, LVH)</li>
+            <li><strong>MaxHR:</strong> Denyut jantung maksimum yang dicapai (contoh: 150)</li>
+            <li><strong>ExerciseAngina:</strong> Y jika angina saat olahraga, N jika tidak</li>
+            <li><strong>Oldpeak:</strong> Depresi ST akibat olahraga dibanding istirahat (contoh: 1.2)</li>
+            <li><strong>ST_Slope:</strong> Kemiringan segmen ST selama latihan (Up, Flat, Down)</li>
+        </ul>
+    </div>
+</body>
+</html>
